@@ -22,7 +22,7 @@ def create_topo_switch(topopath):
         #print(f" header: {topofile[0]}")
 
     # iterate through entries and build dictionary containing the topology
-    for element in topofile[1:]:
+    for element in topofile[1:2]:
         router1 = element[0].removeprefix("swi")
         intf1 = element[1].replace("/","_").lower()
         router2 = element[2].removeprefix("swi")
@@ -108,13 +108,17 @@ def create_graph_switch(topo, linkdatapath, timestep, scale = 1, max_util = 0.7)
     link = []
     nodes = set()
 
+    # linkdatapath = ../Dataset/Switch/interfaces
+
     # for every link read the link loads
     for key, element in topo.items():
         
         filepath1 = f"{linkdatapath}/swi{key[0]}/{key[1]}.csv"
         content1 = read_file_switch(filepath1, timestep)
+        print(f"content1: {content1}")
         filepath2 = f"{linkdatapath}/swi{key[2]}/{key[3]}.csv"
         content2 = read_file_switch(filepath2, timestep)
+        print(f"content2: {content2}")
 
         # if there is no value go to next entry
         if len(content1) == 0 and len(content2) == 0:
@@ -134,12 +138,20 @@ def create_graph_switch(topo, linkdatapath, timestep, scale = 1, max_util = 0.7)
 
             # take the average of both sides
             tx = (content1[2]+content2[1])/2
+            print(f"tx: {tx}")
             rx = (content1[1]+content2[2])/2
 
+            print(f"keys: {key}")
+            print(f"elements: {element}")
+            
             link_util[key] = [tx*(10**(-9))*8, rx*(10**(-9))*8, element[0]*10**(-9), element[1]]
             link.append(key)
             nodes.add(key[0])
             nodes.add(key[2])
+
+            print(f"link_util: {link_util}")
+            print(f"link: {link}")
+            print(f"nodes: {nodes}")
 
     # create networkx graph
     G = nx.MultiDiGraph()
